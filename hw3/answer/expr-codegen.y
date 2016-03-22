@@ -940,8 +940,10 @@ Value *BinaryExprAST::Codegen(){
 	case T_MOD: return Builder.CreateSRem(L, R);
 
 	// -- Relational Operations
-	
-
+	case T_LT: return Builder.CreateICmpSLT(L, R);
+	case T_GT: return Builder.CreateICmpSGT(L, R);
+	case T_LEQ: return Builder.CreateICmpSLE(L, R);
+	case T_GEQ: return Builder.CreateICmpSGE(L, R); 
 	
 	default: throw runtime_error("Unknown operator ");
 

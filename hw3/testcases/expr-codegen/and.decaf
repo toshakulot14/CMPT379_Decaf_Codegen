@@ -1,8 +1,17 @@
 extern void print_int(int);
 class Test {
+	void foo(int t)
+	{
+		int y;
+	}
+
 	int main()
 	{
 		int x;
-		
+		int a;
+		bool t;
+		t=4<=4;
+		a=6+10%20/2-13;
+		foo(a);
 	}
 }

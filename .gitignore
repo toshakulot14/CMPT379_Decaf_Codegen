@@ -32,5 +32,6 @@ ompiled Object files
 *.out
 *.app
 
-# Stackdump files
+# Misc (Stackdump files, swp files, etc.)
 *.stackdump
+*.swp
