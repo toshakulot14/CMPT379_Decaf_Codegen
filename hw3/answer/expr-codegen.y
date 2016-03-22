@@ -945,6 +945,10 @@ Value *BinaryExprAST::Codegen(){
 	case T_LEQ: return Builder.CreateICmpSLE(L, R);
 	case T_GEQ: return Builder.CreateICmpSGE(L, R); 
 	
+	// -- Equallity Operations
+	case T_EQ: return Builder.CreateICmpEQ(L, R);
+	case T_NEQ: return Builder.CreateICmpNE(L, R);
+
 	default: throw runtime_error("Unknown operator ");
 
     }
