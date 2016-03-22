@@ -10,7 +10,7 @@ class Test {
 		int x;
 		int a;
 		bool t;
-		t=4!=4;
+		t=false && true || true;
 		a=6+10%20/2-13;
 		foo(a);
 	}

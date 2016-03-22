@@ -949,6 +949,12 @@ Value *BinaryExprAST::Codegen(){
 	case T_EQ: return Builder.CreateICmpEQ(L, R);
 	case T_NEQ: return Builder.CreateICmpNE(L, R);
 
+	// -- Conditional Operations
+	// Not sure what the output should be on:
+	// 'true || true && false' <- Outputs false right now.
+	case T_AND: return Builder.CreateAnd(L, R);
+	case T_OR: return Builder.CreateOr(L, R);
+
 	default: throw runtime_error("Unknown operator ");
 
     }
