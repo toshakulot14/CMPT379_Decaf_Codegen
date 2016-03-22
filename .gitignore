@@ -1,0 +1,36 @@
+ompiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+#Other Lex/Yacc linked libraries
+*.tab.cc
+*.tab.h
+*.lex.cc
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Stackdump files
+*.stackdump
