@@ -10,8 +10,8 @@ class Test {
 		int x;
 		int a;
 		bool t;
-		t=false && true || true;
-		a=6+10%20/2-13;
-		foo(a);
+		t=(true||true)&&!true;
+		a=-5+4/-2+10;
+		foo(6+(-4*5)/2);
 	}
 }

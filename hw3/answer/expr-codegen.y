@@ -857,7 +857,10 @@ Value *BreakStmtAST::Codegen(){
 }
 
 Value *ReturnStmtAST::Codegen(){
-    return 0;
+    // Codegen for 'return ...' statement
+    llvm::Value *RetVal = Value->Codegen();
+    if (RetVal == 0) return Builder.CreateRetVoid();
+    return Builder.CreateRet(RetVal);
 }
 
 Value *ForStmtAST::Codegen(){
@@ -918,7 +921,19 @@ Value *AssignVarAST::Codegen(){
 }
 
 Value *UnaryExprAST::Codegen(){
-    return 0;
+    // Expressions for '!' (NOT) and '-' (negative numbers)
+
+    llvm::Value *Oprnd = Expr->Codegen();
+    if (Oprnd == 0) return 0;
+
+    switch(Op){
+	case T_MINUS: return Builder.CreateNeg(Oprnd);
+	case T_NOT: return Builder.CreateNot(Oprnd);
+
+	default: throw runtime_error("Unknown unary operator");
+    }
+
+//    return 0;
 }
 
 Value *BinaryExprAST::Codegen(){
@@ -955,7 +970,7 @@ Value *BinaryExprAST::Codegen(){
 	case T_AND: return Builder.CreateAnd(L, R);
 	case T_OR: return Builder.CreateOr(L, R);
 
-	default: throw runtime_error("Unknown operator ");
+	default: throw runtime_error("Unknown binary operator ");
 
     }
     
