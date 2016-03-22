@@ -1,8 +1,18 @@
 extern void print_int(int);
 class Test {
+	void foo(int t, int s)
+	{
+		int y;
+	}
+
 	int main()
 	{
 		int x;
-		
+		int a;
+		bool t;
+		x=5*4-3;
+		t=(true||true)&&!true;
+		a=-5+4/-2+10;
+		foo(x);
 	}
 }

@@ -817,16 +817,33 @@ Value *MethodDeclAST::Codegen(){
     
     // Create the function type
     // *note* consider functions with parameters.
-    list<Type*> paramTy_list;
+    std::vector<Type *> paramTy_list;
+    std::vector<llvm::Value *> paramVal_list;
+    FunctionType *funcTy;
     // Iterate through the parameters/arguments
     TypedSymbolListAST *func_args = FunctionArgs;
+    if (func_args == 0) {
+	cout << "Function no params";
+	funcTy = FunctionType::get(returnTy, false);
+    }
+    else {
+	cout << "Function WITH params";
+	list<TypedSymbol *> func_args_argslist = func_args->arglist;
+	for (list<TypedSymbol *>::iterator it = func_args_argslist.begin();it!=func_args_argslist.end(); it++){
+		cout << "Param name: " << (*it)->Sym << endl;
+		paramVal_list.push_back( (*it)->Codegen() );
+		paramTy_list.push_back( getLLVMType((*it)->Ty) );
+	}
+	
+	funcTy = FunctionType::get(returnTy, paramTy_list, false);	
+    }
     //list<TypedSymbol *> func_args_arglist = func_args->arglist;
    
     //list<TypedSymbol*>::iterator it = (FunctionArgs->arglist).begin();
     // for (list<TypedSymbol*>::iterator it = func_args_arglist.begin(); it!=func_args_arglist.end(); it++){
 	//paramTy_list.push_back( getLLVMType( (*it)->Ty ) );
    // }
-    FunctionType *funcTy = FunctionType::get(returnTy, false);
+//    FunctionType *funcTy = FunctionType::get(returnTy, false);
     
     // Create the function
     Function *TheFunction = Function::Create(funcTy, Function::ExternalLinkage, Name, TheModule);
@@ -837,14 +854,18 @@ Value *MethodDeclAST::Codegen(){
     BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", TheFunction);
     Builder.SetInsertPoint(BB);  // Set insertion point of instructions
 
+    if (FunctionArgs != 0){
+	    for (list<TypedSymbol *>::iterator it = FunctionArgs->arglist.begin(); it!=FunctionArgs->arglist.end(); ++it){
+		(*it)->Codegen();
+	    }
+    }
     // -- Do other stuff here --  -> the function body
     Block->Codegen();  
-   
+
     // Return statement
     if (ReturnType == intTy)		Builder.CreateRet( ConstantInt::get(getGlobalContext(), APInt(32,0)) );
     else if (ReturnType == voidTy)	Builder.CreateRetVoid();
-
-
+  
     return 0;
 }
 
@@ -857,7 +878,10 @@ Value *BreakStmtAST::Codegen(){
 }
 
 Value *ReturnStmtAST::Codegen(){
-    return 0;
+    // Codegen for 'return ...' statement
+    llvm::Value *RetVal = Value->Codegen();
+    if (RetVal == 0) return Builder.CreateRetVoid();
+    return Builder.CreateRet(RetVal);
 }
 
 Value *ForStmtAST::Codegen(){
@@ -918,7 +942,19 @@ Value *AssignVarAST::Codegen(){
 }
 
 Value *UnaryExprAST::Codegen(){
-    return 0;
+    // Expressions for '!' (NOT) and '-' (negative numbers)
+
+    llvm::Value *Oprnd = Expr->Codegen();
+    if (Oprnd == 0) return 0;
+
+    switch(Op){
+	case T_MINUS: return Builder.CreateNeg(Oprnd);
+	case T_NOT: return Builder.CreateNot(Oprnd);
+
+	default: throw runtime_error("Unknown unary operator");
+    }
+
+//    return 0;
 }
 
 Value *BinaryExprAST::Codegen(){
@@ -930,7 +966,6 @@ Value *BinaryExprAST::Codegen(){
 
     switch(Op){
 	// -- Arithmetic Operations
-	// As of now, can't deal with negative numbers
 	case T_PLUS: return Builder.CreateAdd(L, R, "addtmp");
 	case T_MINUS: return Builder.CreateSub(L, R, "subtmp");
 	case T_MULT: return Builder.CreateMul(L, R, "multmp");
@@ -940,10 +975,22 @@ Value *BinaryExprAST::Codegen(){
 	case T_MOD: return Builder.CreateSRem(L, R);
 
 	// -- Relational Operations
+	case T_LT: return Builder.CreateICmpSLT(L, R);
+	case T_GT: return Builder.CreateICmpSGT(L, R);
+	case T_LEQ: return Builder.CreateICmpSLE(L, R);
+	case T_GEQ: return Builder.CreateICmpSGE(L, R); 
 	
+	// -- Equallity Operations
+	case T_EQ: return Builder.CreateICmpEQ(L, R);
+	case T_NEQ: return Builder.CreateICmpNE(L, R);
 
-	
-	default: throw runtime_error("Unknown operator ");
+	// -- Conditional Operations
+	// Not sure what the output should be on:
+	// 'true || true && false' <- Outputs false right now.
+	case T_AND: return Builder.CreateAnd(L, R);
+	case T_OR: return Builder.CreateOr(L, R);
+
+	default: throw runtime_error("Unknown binary operator ");
 
     }
     
