@@ -817,16 +817,33 @@ Value *MethodDeclAST::Codegen(){
     
     // Create the function type
     // *note* consider functions with parameters.
-    list<Type*> paramTy_list;
+    std::vector<Type *> paramTy_list;
+    std::vector<llvm::Value *> paramVal_list;
+    FunctionType *funcTy;
     // Iterate through the parameters/arguments
     TypedSymbolListAST *func_args = FunctionArgs;
+    if (func_args == 0) {
+	cout << "Function no params";
+	funcTy = FunctionType::get(returnTy, false);
+    }
+    else {
+	cout << "Function WITH params";
+	list<TypedSymbol *> func_args_argslist = func_args->arglist;
+	for (list<TypedSymbol *>::iterator it = func_args_argslist.begin();it!=func_args_argslist.end(); it++){
+		cout << "Param name: " << (*it)->Sym << endl;
+		paramVal_list.push_back( (*it)->Codegen() );
+		paramTy_list.push_back( getLLVMType((*it)->Ty) );
+	}
+	
+	funcTy = FunctionType::get(returnTy, paramTy_list, false);	
+    }
     //list<TypedSymbol *> func_args_arglist = func_args->arglist;
    
     //list<TypedSymbol*>::iterator it = (FunctionArgs->arglist).begin();
     // for (list<TypedSymbol*>::iterator it = func_args_arglist.begin(); it!=func_args_arglist.end(); it++){
 	//paramTy_list.push_back( getLLVMType( (*it)->Ty ) );
    // }
-    FunctionType *funcTy = FunctionType::get(returnTy, false);
+//    FunctionType *funcTy = FunctionType::get(returnTy, false);
     
     // Create the function
     Function *TheFunction = Function::Create(funcTy, Function::ExternalLinkage, Name, TheModule);
@@ -837,14 +854,18 @@ Value *MethodDeclAST::Codegen(){
     BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", TheFunction);
     Builder.SetInsertPoint(BB);  // Set insertion point of instructions
 
+    if (FunctionArgs != 0){
+	    for (list<TypedSymbol *>::iterator it = FunctionArgs->arglist.begin(); it!=FunctionArgs->arglist.end(); ++it){
+		(*it)->Codegen();
+	    }
+    }
     // -- Do other stuff here --  -> the function body
     Block->Codegen();  
-   
+
     // Return statement
     if (ReturnType == intTy)		Builder.CreateRet( ConstantInt::get(getGlobalContext(), APInt(32,0)) );
     else if (ReturnType == voidTy)	Builder.CreateRetVoid();
-
-
+  
     return 0;
 }
 
@@ -945,7 +966,6 @@ Value *BinaryExprAST::Codegen(){
 
     switch(Op){
 	// -- Arithmetic Operations
-	// As of now, can't deal with negative numbers
 	case T_PLUS: return Builder.CreateAdd(L, R, "addtmp");
 	case T_MINUS: return Builder.CreateSub(L, R, "subtmp");
 	case T_MULT: return Builder.CreateMul(L, R, "multmp");

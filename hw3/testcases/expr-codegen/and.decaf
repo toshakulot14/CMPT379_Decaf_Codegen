@@ -1,6 +1,6 @@
 extern void print_int(int);
 class Test {
-	void foo(int t)
+	void foo(int t, int s)
 	{
 		int y;
 	}
@@ -10,8 +10,9 @@ class Test {
 		int x;
 		int a;
 		bool t;
+		x=5*4-3;
 		t=(true||true)&&!true;
 		a=-5+4/-2+10;
-		foo(6+(-4*5)/2);
+		foo(x);
 	}
 }
