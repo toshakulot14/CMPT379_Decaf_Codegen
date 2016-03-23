@@ -12,7 +12,8 @@ class Test {
 		bool t;
 		x=5*4-3;
 		t=(true||true)&&!true;
-		a=-5+4/-2+10;
+		a='g';
 		foo(x);
+		print_int(333);
 	}
 }

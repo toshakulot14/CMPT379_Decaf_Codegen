@@ -107,8 +107,8 @@ SymbolTableList symbol_table_list;      // A collection (list) of symbol tables
 %token <sval> T_ID T_STRINGCONSTANT
 
 %type <decaftype> type method_type extern_type
-%type <ast> rvalue expr constant bool_constant method_call method_arg method_arg_list assign assign_comma_list
-%type <ast> block method_block statement statement_list var_decl_list var_decl var_list param_list param_comma_list 
+%type <ast> rvalue expr constant bool_constant method_call method_arg method_arg_list assign /*assign_comma_list*/
+%type <ast> method_block statement statement_list var_decl_list var_decl var_list param_list param_comma_list 
 %type <ast> method_decl method_decl_list field_decl_list field_decl field_list extern_type_list extern_defn
 %type <ast> extern_list decafclass
 
@@ -158,11 +158,13 @@ extern_defn: T_EXTERN method_type T_ID T_LPAREN extern_type_list T_RPAREN T_SEMI
     { 
     
 	$$ = new ExternAST((decafType)$2, *$3, (TypedSymbolListAST *)$5); delete $3; 
+	$$->Codegen();
 	
     }
     | T_EXTERN method_type T_ID T_LPAREN T_RPAREN T_SEMICOLON
     {
     	$$ = new ExternAST((decafType)$2, *$3, NULL); delete $3; 
+	$$->Codegen();
     }
     ;
 
@@ -309,7 +311,7 @@ method_decl_list: method_decl_list method_decl
 method_decl: T_VOID T_ID T_LPAREN param_list T_RPAREN method_block
     {
     	
-	cout << "==Method DECL  - VOID ==";
+	//cout << "==Method DECL  - VOID ==";
 	$$ = new MethodDeclAST(voidTy, *$2, (TypedSymbolListAST *)$4, (MethodBlockAST *)$6); delete $2;
 	$$->Codegen();
 	symbol_table.clear();
@@ -317,7 +319,7 @@ method_decl: T_VOID T_ID T_LPAREN param_list T_RPAREN method_block
     }
     | type T_ID T_LPAREN param_list T_RPAREN method_block
     {
-    	cout << "==Method DECL - INT/BOOL ==";
+    	//cout << "==Method DECL - INT/BOOL ==";
 	$$ = new MethodDeclAST((decafType)$1, *$2, (TypedSymbolListAST *)$4, (MethodBlockAST *)$6); delete $2;
 	$$->Codegen();
 	symbol_table.clear();
@@ -395,12 +397,14 @@ type: T_INTTYPE
     }
     ;
 
+/* method_block==block
 block: T_LCB var_decl_list statement_list T_RCB
     {
-    
+	    
 	$$ = new BlockAST((decafStmtList *)$2, (decafStmtList *)$3);
 
     }
+*/
 
 method_block: T_LCB var_decl_list statement_list T_RCB
     {
@@ -520,7 +524,7 @@ statement: assign T_SEMICOLON
     {
     	$$ = $1; 
     }
-    | T_IF T_LPAREN expr T_RPAREN block T_ELSE block
+/*    | T_IF T_LPAREN expr T_RPAREN block T_ELSE block
     {
     	$$ = new IfStmtAST($3, (BlockAST *)$5, (BlockAST *)$7); 
     }
@@ -536,7 +540,7 @@ statement: assign T_SEMICOLON
     {
         $$ = new ForStmtAST((decafStmtList *)$3, $5, (decafStmtList *)$7, (BlockAST *)$9); 
     }
-    | T_RETURN T_LPAREN expr T_RPAREN T_SEMICOLON
+*/  | T_RETURN T_LPAREN expr T_RPAREN T_SEMICOLON
     {
         $$ = new ReturnStmtAST($3); 
     }
@@ -548,7 +552,7 @@ statement: assign T_SEMICOLON
     {
         $$ = new ReturnStmtAST(NULL); 
     }
-    | T_BREAK T_SEMICOLON
+/*    | T_BREAK T_SEMICOLON
     {
         $$ = new BreakStmtAST(); 
     }
@@ -556,7 +560,7 @@ statement: assign T_SEMICOLON
     {
         $$ = new ContinueStmtAST(); 
     }
-    | block
+*/  | method_block
     {
         $$ = $1; 
     }
@@ -628,7 +632,8 @@ method_arg: expr
 
     }
     ;
-   
+
+/* Useless grammar  
 assign_comma_list: assign
     {
 
@@ -642,6 +647,7 @@ assign_comma_list: assign
 
     }
     ;
+*/
 
 rvalue: T_ID
     {
@@ -792,7 +798,25 @@ Value *ProgramAST::Codegen(){
 }
 
 Value *ExternAST::Codegen(){
-    return 0;
+    // Codegen for external functions
+
+    // Get param types first, if any
+    std::vector<Type *> args;
+    FunctionType *funcTy;
+    if (FunctionArgs != 0){
+	for (list<TypedSymbol *>::iterator it = FunctionArgs->arglist.begin(); it!=FunctionArgs->arglist.end(); it++){
+		//cout << "External func paarams!" << (*it)->Sym << endl;
+		args.push_back(getLLVMType((*it)->Ty));
+	}
+  
+	// Create llvm::FunctionType with params
+	funcTy = FunctionType::get(getLLVMType(ReturnType), args, false);
+    }
+    // No param, so create llvm::FunctionType without params
+    else funcTy = FunctionType::get(getLLVMType(ReturnType), false);
+
+    // Create Function ('declare ...')
+    return Function::Create(funcTy, Function::ExternalLinkage, Name, TheModule);
 }
 
 Value *ClassAST::Codegen(){
@@ -823,14 +847,14 @@ Value *MethodDeclAST::Codegen(){
     // Iterate through the parameters/arguments
     TypedSymbolListAST *func_args = FunctionArgs;
     if (func_args == 0) {
-	cout << "Function no params";
+	//cout << "Function no params";
 	funcTy = FunctionType::get(returnTy, false);
     }
     else {
-	cout << "Function WITH params";
+	//cout << "Function WITH params";
 	list<TypedSymbol *> func_args_argslist = func_args->arglist;
 	for (list<TypedSymbol *>::iterator it = func_args_argslist.begin();it!=func_args_argslist.end(); it++){
-		cout << "Param name: " << (*it)->Sym << endl;
+		//cout << "Param name: " << (*it)->Sym << endl;
 		paramVal_list.push_back( (*it)->Codegen() );
 		paramTy_list.push_back( getLLVMType((*it)->Ty) );
 	}
@@ -855,7 +879,7 @@ Value *MethodDeclAST::Codegen(){
 	list<TypedSymbol *>::iterator TypedSymListIt = FunctionArgs->arglist.begin();
 
     	for (Function::arg_iterator argsit = TheFunction->arg_begin(); argsit!=TheFunction->arg_end(); argsit++){
-		cout << "Parameter: " << (*TypedSymListIt)->Sym << ", ";
+		//cout << "Parameter: " << (*TypedSymListIt)->Sym << ", ";
 		Value* argVal = argsit;
 		argVal->setName((*TypedSymListIt)->Sym);
 		TypedSymListIt++;
@@ -874,7 +898,7 @@ Value *MethodDeclAST::Codegen(){
     }
 
     // -- Do other stuff here --  -> the function body
-    Block->Codegen();  
+    MethodBlock->Codegen();  
 
     // Return statement
     if (ReturnType == intTy)		Builder.CreateRet( ConstantInt::get(getGlobalContext(), APInt(32,0)) );
@@ -883,6 +907,7 @@ Value *MethodDeclAST::Codegen(){
     return 0;
 }
 
+/*
 Value *ContinueStmtAST::Codegen(){
     return 0;
 }
@@ -890,6 +915,7 @@ Value *ContinueStmtAST::Codegen(){
 Value *BreakStmtAST::Codegen(){
     return 0;
 }
+*/
 
 Value *ReturnStmtAST::Codegen(){
     // Codegen for 'return ...' statement
@@ -898,6 +924,7 @@ Value *ReturnStmtAST::Codegen(){
     return Builder.CreateRet(RetVal);
 }
 
+/*
 Value *ForStmtAST::Codegen(){
     return 0;
 }
@@ -909,6 +936,7 @@ Value *WhileStmtAST::Codegen(){
 Value *IfStmtAST::Codegen(){
     return 0;
 }
+*/
 
 Value *MethodBlockAST::Codegen(){
     // Codegen for function body
@@ -921,9 +949,11 @@ Value *MethodBlockAST::Codegen(){
     return 0;
 }
 
+/*
 Value *BlockAST::Codegen(){
     return 0;
 }
+*/
 
 Value *ArrayLocExprAST::Codegen(){
     return 0;
@@ -1028,14 +1058,14 @@ Value *MethodCallAST::Codegen(){
 	}
     } 
     //argsit = Args->stmts;
-    else cout << "ARGS NULL!";
+    //else cout << "ARGS NULL!";
     // = Args->stmts;
     //for (list<decafAST *>::iterator argsit = (Args->stmts).begin(); argsit!=(Args->stmts).end(); argsit++){
 //	ArgsV.push_back();
    // }
 //    Builder.CreateCall(Function,Args);
-    if (ArgsV.size()==0) cout << "ARGFUCKINGV NULL";
-    else cout << "ARGSV not null";
+    //if (ArgsV.size()==0) cout << "ARGFUCKINGV NULL";
+    //else cout << "ARGSV not null";
 
     // Get Fucntiontype, then return call based on that
     llvm::Type *funcTy = CalleeF->getReturnType();
@@ -1100,18 +1130,10 @@ Value *TypedSymbol::Codegen(){
     return 0;
 }
 
+// END CODEGEN
 
 
-
-
-
-
-
-
-
-
-
-
+// MAIN FUNCTION
 int main() {
   // initialize LLVM
   LLVMContext &Context = getGlobalContext();
