@@ -850,6 +850,19 @@ Value *MethodDeclAST::Codegen(){
     // Check if successful
     if (TheFunction == 0)  throw runtime_error("empty function block");
 
+    // Set Parameter names (usimg arg_begin())
+    if (FunctionArgs!=0){
+	list<TypedSymbol *>::iterator TypedSymListIt = FunctionArgs->arglist.begin();
+
+    	for (Function::arg_iterator argsit = TheFunction->arg_begin(); argsit!=TheFunction->arg_end(); argsit++){
+		cout << "Parameter: " << (*TypedSymListIt)->Sym << ", ";
+		Value* argVal = argsit;
+		argVal->setName((*TypedSymListIt)->Sym);
+		TypedSymListIt++;
+
+	}
+    }
+//
     // Create Basic Block
     BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", TheFunction);
     Builder.SetInsertPoint(BB);  // Set insertion point of instructions
@@ -859,6 +872,7 @@ Value *MethodDeclAST::Codegen(){
 		(*it)->Codegen();
 	    }
     }
+
     // -- Do other stuff here --  -> the function body
     Block->Codegen();  
 
