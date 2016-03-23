@@ -1,19 +1,11 @@
 extern void print_int(int);
 class Test {
-	void foo(int t, int s)
-	{
-		int y;
-	}
-
 	int main()
 	{
 		int x;
-		int a;
-		bool t;
-		x=5*4-3;
-		t=(true||true)&&!true;
-		a='g';
-		foo(x);
-		print_int(333);
+		print_int(true && true);
+		print_int(true && false);
+		print_int(false && true);
+		print_int(false && false);
 	}
 }

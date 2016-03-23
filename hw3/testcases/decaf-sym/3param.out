@@ -1,0 +1,10 @@
+class C {
+    int foo(int x, int y, bool z) {
+        x = 1; // using decl on line: 2
+        y = 1; // using decl on line: 2
+        z = false; // using decl on line: 2
+    }
+    int main() {
+        foo(1,2,true);
+    }
+}

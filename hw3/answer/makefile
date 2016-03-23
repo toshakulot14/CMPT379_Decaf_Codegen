@@ -6,13 +6,13 @@ rm=/bin/rm -f
 mv=/bin/mv -f
 targets=
 #cpptargets=type-inherit decaf-sym
-cpptargets=decaf-sym
+#cpptargets=decaf-sym
 #llvmtargets=factorial
 #llvmcpp=sexpr2-codegen expr-codegen
 #llvmcpp=expr-codegen
 #llvmfiles=rec_add
 # llvmcpp=decaf-sym expr-codegen
-llvmcpp=expr-codegen
+llvmcpp=expr-codegen decaf-sym
 
 all: $(targets) $(cpptargets) $(llvmcpp) $(llvmfiles)
 

@@ -29,7 +29,7 @@
 
 # Executables
 *.exe
-*.out
+#*.out --> Needed (testcases output files)
 *.app
 
 # Misc (Stackdump files, swp files, etc.)

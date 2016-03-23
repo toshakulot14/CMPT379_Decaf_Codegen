@@ -1054,7 +1054,9 @@ Value *MethodCallAST::Codegen(){
     // Handle empty args
     if (Args!=NULL) {
 	for (list<decafAST *>::iterator argsit = Args->stmts.begin(); argsit!=Args->stmts.end(); argsit++){
-	    ArgsV.push_back( (*argsit)->Codegen() );
+	    // Handle promoting type
+	    llvm::Value *tmpval = (*argsit)->Codegen();
+	    ArgsV.push_back( Builder.CreateZExt(tmpval, Builder.getInt32Ty()) );
 	}
     } 
     //argsit = Args->stmts;
@@ -1138,7 +1140,7 @@ int main() {
   // initialize LLVM
   LLVMContext &Context = getGlobalContext();
   // Make the module, which holds all the code.
-  TheModule = new Module("module for very simple expressions", Context);
+  TheModule = new Module("Test", Context);
   // parse the input and create the abstract syntax tree
   int retval = yyparse();
   // Print out all of the generated code to stderr

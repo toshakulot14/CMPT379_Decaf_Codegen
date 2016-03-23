@@ -1,0 +1,7 @@
+class C {
+    int main() {
+        int x, y; 
+        x = 1; // using decl on line: 3
+        y = 1; // using decl on line: 3
+    }
+}

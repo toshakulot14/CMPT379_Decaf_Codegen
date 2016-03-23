@@ -1,0 +1,16 @@
+class C {
+	int main() {
+        bool x;
+        int y; 
+        { 
+            int p, q; 
+            { 
+                bool y; 
+                x = true; // using decl on line: 3 
+                y = false; // using decl on line: 8
+                p = 1; // using decl on line: 6
+                q = 1; // using decl on line: 6
+            } 
+        }
+    }
+}

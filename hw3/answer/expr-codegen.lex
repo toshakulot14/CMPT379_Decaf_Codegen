@@ -1,5 +1,5 @@
 %{
-#include "decaf-defs.h"
+#include "decafast-defs.h"
 #include "expr-codegen.tab.h"
 #include <cstring>
 #include <string>
@@ -10,6 +10,14 @@ using namespace std;
 
 int lineno = 1;
 int tokenpos = 1;
+
+string *preterm(const char* token, const char* lexeme) {
+  string *tree = new string;
+  ostringstream s;
+  s << "(" << token << " " << lexeme << ")";
+  *tree = string(s.str());
+  return tree;
+}
 
 string remove_newlines (string s) {
   string newstring;
@@ -35,13 +43,18 @@ string remove_newlines (string s) {
   return newstring;
 }
 
+string *process_token(const char *str) {
+  tokenpos += yyleng;
+  string lexeme(yytext);
+  lexeme = remove_newlines(lexeme);
+  return preterm(str, lexeme.c_str());
+}
+
 void process_ws() {
   tokenpos += yyleng;
   string lexeme(yytext);
   lexeme = remove_newlines(lexeme);
 }
-
-
 
 string *process_string (const char *s) {
   string *ns = new string("");
@@ -101,125 +114,77 @@ int get_intconstant(const char *s) {
 
 %}
 
-/* regexp definitions */
-
-
-letter			[a-zA-Z_]
-decimal_digit		[0-9]
-A			[a-zA-Z_0-9]
-hex_digit		[a-fA-F0-9]
-digit			[0-9]
-newline			[\n]
-carriage_return 	[\r]
-horizontal_tab  	[\t]
-vertical_tab    	[\v]
-form_feed       	[\f]
-space           	[ ]
-whitespace		[ \t\v\n\f\r]
-bell			[\a]
-backspace		[\b]
-
-decimal_lit		{decimal_digit}+
-hex_lit			(0[xX]){hex_digit}+
-
-string_lit		\"(\\([^"\\\n])|(\\['"\\nrtvfab]))*\"
-
-
-
-escaped_char		(\\['"\\nrtvfab])
-
 chars    [ !\"#\$%&\(\)\*\+,\-\.\/0-9:;\<=>\?\@A-Z\[\]\^\_\`a-z\{\|\}\~\t\v\r\n\a\f\b]
 charesc  \\[\'tvrnafb\\]
 stresc   \\[\'\"tvrnafb\\]
+notstresc \\[^\'\"tvrnafb\\]
 
 %%
   /*
     Pattern definitions for all tokens 
   */
-
-"//"([^\\\n])*\n			{ process_ws(); } /* ignore comments */
-
-"bool"					{ /* cout << yytext; */ return T_BOOLTYPE; }
-"break"					{ /* cout << yytext; */ return T_BREAK; }
-"class"					{ /* cout << yytext; */ return T_CLASS; }
-"continue"				{ /* cout << yytext; */ return T_CONTINUE; }
-"else"					{ /* cout << yytext; */ return T_ELSE; }
-"extends"				{ /* cout << yytext; */ return T_EXTENDS; }
-"extern"				{ /* cout << yytext; */ return T_EXTERN; }
-"false"					{ /* cout << yytext; */ return T_FALSE; }
-"for"					{ /* cout << yytext; */ return T_FOR; }
-"if"					{ /* cout << yytext; */ return T_IF; }
-"int"					{ /* cout << yytext; */ return T_INTTYPE; }
-"new"					{ /* cout << yytext; */ return T_NEW; }
-"null"					{ /* cout << yytext; */ return T_NULL; }
-"return"				{ /* cout << yytext; */ return T_RETURN; }
-"string"				{ /* cout << yytext; */ return T_STRINGTYPE; }
-"true"					{ /* cout << yytext; */ return T_TRUE; }
-"void"					{ /* cout << yytext; */ return T_VOID; }
-"while"					{ /* cout << yytext; */ return T_WHILE; }
-
-
-
-
-('{chars}')|('{charesc}')  		{ cout << yytext; yylval.number = get_charconstant(yytext); return T_CHARCONSTANT; }
-
-
-(0x[0-9a-fA-F]+)|([0-9]+)  		{ cout << yytext; yylval.number = get_intconstant(yytext); return T_INTCONSTANT; }
-
-\"([^\n\"\\]*{stresc}?)*\" 		{ cout << yytext; yylval.sval = process_string(yytext); return T_STRINGCONSTANT; }
-
-
-"&&"					{ /*cout << yytext;*/ return T_AND; }
-"="					{ /*cout << yytext;*/ return T_ASSIGN; }
-","					{ /*cout << yytext;*/ return T_COMMA; }
-"/"					{ /*cout << yytext;*/ return T_DIV; }
-"."					{ /*cout << yytext;*/ return T_DOT; }
-"=="					{ /*cout << yytext;*/ return T_EQ; }
-">="					{ /*cout << yytext;*/ return T_GEQ; }
-">"					{ /*cout << yytext;*/ return T_GT; }
-"{"					{ /*cout << yytext;*/ return T_LCB; }
-"<<"					{ /*cout << yytext;*/ return T_LEFTSHIFT; }
-"<="					{ /*cout << yytext;*/ return T_LEQ; }
-"("					{ /*cout << yytext;*/ return T_LPAREN; }
-"["					{ /*cout << yytext;*/ return T_LSB; }
-"<"					{ /*cout << yytext;*/ return T_LT; }
-"-"					{ /*cout << yytext;*/ return T_MINUS; }
-"%"					{ /*cout << yytext;*/ return T_MOD; }
-"*"					{ /*cout << yytext;*/ return T_MULT; }
-"!="					{ /*cout << yytext;*/ return T_NEQ; }
-"!"					{ /*cout << yytext;*/ return T_NOT; }
-"||"					{ /*cout << yytext;*/ return T_OR; }
-"+"					{ /*cout << yytext;*/ return T_PLUS; }
-"}"					{ /*cout << yytext;*/ return T_RCB; }
-">>"					{ /*cout << yytext;*/ return T_RIGHTSHIFT; }
-")"					{ /*cout << yytext;*/ return T_RPAREN; }
-"]"					{ /*cout << yytext;*/ return T_RSB; }
-";"					{ /*cout << yytext;*/ return T_SEMICOLON; }
-
-[a-zA-Z\_][a-zA-Z\_0-9]*   		{ /*cout << yytext;*/ yylval.sval = new string(yytext); return T_ID; } /* note that identifier pattern must be after all keywords */
-
-[\n]        { lineno++; /*cout << yytext;*/ }
-
-\'(\\['"\\nrtvfab]|[^'\\\n])(\\['"\\nrtvfab]|[^'\\\n])+\'	{ cerr << "Error: char constant length is greater than one" << endl; exit(1); }
-
-\'\'					{ cerr << "Error: char constant has zero width" << endl; exit(1); }
-
-\'\\\'					{ cerr << "Error: unterminated char constant" << endl; exit(1); }
-
-\'[^\'\n][^\'\n][\n]			{ cerr << "Error: unterminated char constant" << endl; exit(1); }
-
-\"[^\"]*[\n]				{ cerr << "Error: newline in string constant" << endl; exit(1);}
-
-\"\\\"					{ cerr << "Error: newline in string constant" << endl; exit(1);}
-
-
-
-
-(\"([^"\\\n]|(\\['"\\nrtvfab]))*(\\[^'"\\nrtvfab])+([^"\\\n]|(\\['"\\nrtvfab]))*\")	{ cerr << "Error: unknown escape sequence in string constant" << endl; exit(1);}
-
-
-
-
+&&                         { return T_AND; }
+=                          { return T_ASSIGN; }
+bool                       { return T_BOOLTYPE; }
+break                      { return T_BREAK; }
+('{chars}')|('{charesc}')  { yylval.number = get_charconstant(yytext); return T_CHARCONSTANT; }
+class                      { return T_CLASS; }
+,                          { return T_COMMA; }
+\/\/[^\n]*\n               { process_ws(); } /* ignore comments */
+continue                   { return T_CONTINUE; }
+\/                         { return T_DIV; }
+\.                         { return T_DOT; }
+ else                      { return T_ELSE; }
+==                         { return T_EQ; }
+extends                    { return T_EXTENDS; }
+extern                     { return T_EXTERN; }
+false                      { return T_FALSE; }
+for                        { return T_FOR; }
+>=                         { return T_GEQ; }
+>                          { return T_GT; }
+if                         { return T_IF; }
+(0x[0-9a-fA-F]+)|([0-9]+)  { yylval.number = get_intconstant(yytext); return T_INTCONSTANT; }
+int                        { return T_INTTYPE; }
+\{                         { return T_LCB; }
+\<\<                       { return T_LEFTSHIFT; }
+\<=                        { return T_LEQ; }
+\(                         { return T_LPAREN; }
+\[                         { return T_LSB; }
+\<                         { return T_LT; }
+-                          { return T_MINUS; }
+\%                         { return T_MOD; }
+\*                         { return T_MULT; }
+!=                         { return T_NEQ; }
+new                        { return T_NEW; }
+!                          { return T_NOT; }
+null                       { return T_NULL; }
+\|\|                       { return T_OR; }
+\+                         { return T_PLUS; }
+\}                         { return T_RCB; }
+return                     { return T_RETURN; }
+>>                         { return T_RIGHTSHIFT; }
+\)                         { return T_RPAREN; }
+\]                         { return T_RSB; }
+\;                         { return T_SEMICOLON; }
+string                     { return T_STRINGTYPE; }
+\"([^\n\"\\]*{stresc}?)*\" { yylval.sval = process_string(yytext); return T_STRINGCONSTANT; }
+true                       { return T_TRUE; }
+void                       { return T_VOID; }
+while                      { return T_WHILE; }
+[a-zA-Z\_][a-zA-Z\_0-9]*   { yylval.sval = new string(yytext); return T_ID; } /* note that identifier pattern must be after all keywords */
+[\t\r\n\a\v\b ]+           { process_ws(); } /* ignore whitespace */
+  /* 
+   Error handling
+   (be careful: error patterns should not match more input than a valid token)
+  */
+\"([^\n\"\\]*{notstresc}?)*\" { cerr << "Error: unknown escape sequence in string constant" << endl; return -1; }
+\"\"\"                     { cerr << "Error: unterminated string constant" << endl; return -1; }
+\"([^\n\"\\]*{notstresc}?)*\n { cerr << "Error: newline in string constant" << endl; return -1; }
+\"([^\n\"\\]*{stresc}?)*$  { cerr << "Error: string constant is missing closing delimiter" << endl; return -1; }
+'[^\\]{chars}'             { cerr << "Error: char constant length is greater than one" << endl; return -1; }
+'\\'                       { cerr << "Error: unterminated char constant" << endl; return -1; }
+''                         { cerr << "Error: char constant has zero width" << endl; return -1; }
+.                          { cerr << "Error: unexpected character in input" << endl; return -1; }
 
 %%
 

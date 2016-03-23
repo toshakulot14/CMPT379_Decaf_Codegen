@@ -1,0 +1,33 @@
+class C {
+    int main() {
+        int x, y;
+        x = 1; // using decl on line: 3
+        y = 100; // using decl on line: 3
+        print_int(x) // using decl on line: 3;
+        print_int(y) // using decl on line: 3;
+        {
+            int x;
+            x = 2; // using decl on line: 9
+            print_int(x) // using decl on line: 9;
+            print_int(y) // using decl on line: 3;
+            {
+                int x;
+                x = 3; // using decl on line: 14
+                print_int(x) // using decl on line: 14;
+                print_int(y) // using decl on line: 3;
+                {
+                    int x;
+                    x = 4; // using decl on line: 19
+                    print_int(x) // using decl on line: 19;
+                    print_int(y) // using decl on line: 3;
+                    {
+                        int x;
+                        x = 5; // using decl on line: 24
+                        print_int(x) // using decl on line: 24;
+                        print_int(y) // using decl on line: 3;
+                    }
+                }
+            }
+        }
+    }
+}

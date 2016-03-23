@@ -1,0 +1,18 @@
+class C {
+    int x = 1;
+    int y = 1;
+    bool z = true;
+    int foo(int x, int y, bool z) {
+        x = 2; // using decl on line: 5
+        y = 2; // using decl on line: 5
+        z = false; // using decl on line: 5
+    }
+    int main() {
+        int x, y;
+        bool z;
+        x = 3; // using decl on line: 11
+        y = 3; // using decl on line: 11
+        z = true; // using decl on line: 12
+        foo(x, // using decl on line: 11y, // using decl on line: 11z) // using decl on line: 12;
+    }
+}
