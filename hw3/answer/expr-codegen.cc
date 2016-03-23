@@ -325,6 +325,7 @@ public:
 	virtual Value *Codegen();
 };
 
+/*
 /// BlockAST - block
 class BlockAST : public decafAST {
 	decafStmtList *Vars;
@@ -340,7 +341,9 @@ public:
 	string str() { return buildString2("Block", Vars, Statements); }
 	virtual Value *Codegen();
 };
+*/
 
+// METHODBLOCK==BLOCK
 /// MethodBlockAST - block for methods
 class MethodBlockAST : public decafAST {
 	decafStmtList *Vars;
@@ -355,6 +358,8 @@ public:
 	virtual Value *Codegen();
 };
 
+// NO CONDITIONAL STATEMENTS
+/*
 /// IfStmtAST - if statement
 class IfStmtAST : public decafAST {
 	decafAST *Cond;
@@ -400,6 +405,7 @@ public:
 	string str() { return buildString4("ForStmt", InitList, Cond, LoopEndList, Body); }
 	virtual Value *Codegen();
 };
+*/
 
 /// ReturnStmtAST - return statement
 class ReturnStmtAST : public decafAST {
@@ -412,6 +418,7 @@ public:
 	string str() { return buildString1("ReturnStmt", Value); }
 	virtual llvm::Value *Codegen();
 };
+
 
 /// BreakStmtAST - break statement
 class BreakStmtAST : public decafAST {
@@ -434,15 +441,15 @@ class MethodDeclAST : public decafAST {
 	decafType ReturnType;
 	string Name;
 	TypedSymbolListAST *FunctionArgs;
-	MethodBlockAST *Block;
+	MethodBlockAST *MethodBlock;
 public:
 	MethodDeclAST(decafType rtype, string name, TypedSymbolListAST *fargs, MethodBlockAST *block) 
-		: ReturnType(rtype), Name(name), FunctionArgs(fargs), Block(block) {}
+		: ReturnType(rtype), Name(name), FunctionArgs(fargs), MethodBlock(block) {}
 	~MethodDeclAST() { 
 		delete FunctionArgs;
-		delete Block; 
+		delete MethodBlock; 
 	}
-	string str() { return buildString4("Method", Name, TyString(ReturnType), FunctionArgs, Block); }
+	string str() { return buildString4("Method", Name, TyString(ReturnType), FunctionArgs, MethodBlock); }
 	virtual Value *Codegen();
 };
 
