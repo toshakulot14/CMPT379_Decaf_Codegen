@@ -311,7 +311,7 @@ method_decl_list: method_decl_list method_decl
 method_decl: T_VOID T_ID T_LPAREN param_list T_RPAREN method_block
     {
     	
-	cout << "==Method DECL  - VOID ==";
+	//cout << "==Method DECL  - VOID ==";
 	$$ = new MethodDeclAST(voidTy, *$2, (TypedSymbolListAST *)$4, (MethodBlockAST *)$6); delete $2;
 	$$->Codegen();
 	symbol_table.clear();
@@ -319,7 +319,7 @@ method_decl: T_VOID T_ID T_LPAREN param_list T_RPAREN method_block
     }
     | type T_ID T_LPAREN param_list T_RPAREN method_block
     {
-    	cout << "==Method DECL - INT/BOOL ==";
+    	//cout << "==Method DECL - INT/BOOL ==";
 	$$ = new MethodDeclAST((decafType)$1, *$2, (TypedSymbolListAST *)$4, (MethodBlockAST *)$6); delete $2;
 	$$->Codegen();
 	symbol_table.clear();
@@ -805,7 +805,7 @@ Value *ExternAST::Codegen(){
     FunctionType *funcTy;
     if (FunctionArgs != 0){
 	for (list<TypedSymbol *>::iterator it = FunctionArgs->arglist.begin(); it!=FunctionArgs->arglist.end(); it++){
-		cout << "External func paarams!" << (*it)->Sym << endl;
+		//cout << "External func paarams!" << (*it)->Sym << endl;
 		args.push_back(getLLVMType((*it)->Ty));
 	}
   
@@ -847,14 +847,14 @@ Value *MethodDeclAST::Codegen(){
     // Iterate through the parameters/arguments
     TypedSymbolListAST *func_args = FunctionArgs;
     if (func_args == 0) {
-	cout << "Function no params";
+	//cout << "Function no params";
 	funcTy = FunctionType::get(returnTy, false);
     }
     else {
-	cout << "Function WITH params";
+	//cout << "Function WITH params";
 	list<TypedSymbol *> func_args_argslist = func_args->arglist;
 	for (list<TypedSymbol *>::iterator it = func_args_argslist.begin();it!=func_args_argslist.end(); it++){
-		cout << "Param name: " << (*it)->Sym << endl;
+		//cout << "Param name: " << (*it)->Sym << endl;
 		paramVal_list.push_back( (*it)->Codegen() );
 		paramTy_list.push_back( getLLVMType((*it)->Ty) );
 	}
@@ -879,7 +879,7 @@ Value *MethodDeclAST::Codegen(){
 	list<TypedSymbol *>::iterator TypedSymListIt = FunctionArgs->arglist.begin();
 
     	for (Function::arg_iterator argsit = TheFunction->arg_begin(); argsit!=TheFunction->arg_end(); argsit++){
-		cout << "Parameter: " << (*TypedSymListIt)->Sym << ", ";
+		//cout << "Parameter: " << (*TypedSymListIt)->Sym << ", ";
 		Value* argVal = argsit;
 		argVal->setName((*TypedSymListIt)->Sym);
 		TypedSymListIt++;
@@ -1058,14 +1058,14 @@ Value *MethodCallAST::Codegen(){
 	}
     } 
     //argsit = Args->stmts;
-    else cout << "ARGS NULL!";
+    //else cout << "ARGS NULL!";
     // = Args->stmts;
     //for (list<decafAST *>::iterator argsit = (Args->stmts).begin(); argsit!=(Args->stmts).end(); argsit++){
 //	ArgsV.push_back();
    // }
 //    Builder.CreateCall(Function,Args);
-    if (ArgsV.size()==0) cout << "ARGFUCKINGV NULL";
-    else cout << "ARGSV not null";
+    //if (ArgsV.size()==0) cout << "ARGFUCKINGV NULL";
+    //else cout << "ARGSV not null";
 
     // Get Fucntiontype, then return call based on that
     llvm::Type *funcTy = CalleeF->getReturnType();
@@ -1130,18 +1130,10 @@ Value *TypedSymbol::Codegen(){
     return 0;
 }
 
+// END CODEGEN
 
 
-
-
-
-
-
-
-
-
-
-
+// MAIN FUNCTION
 int main() {
   // initialize LLVM
   LLVMContext &Context = getGlobalContext();

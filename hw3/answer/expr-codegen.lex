@@ -169,36 +169,36 @@ stresc   \\[\'\"tvrnafb\\]
 \"([^\n\"\\]*{stresc}?)*\" 		{ cout << yytext; yylval.sval = process_string(yytext); return T_STRINGCONSTANT; }
 
 
-"&&"					{ cout << yytext; return T_AND; }
-"="					{ cout << yytext; return T_ASSIGN; }
-","					{ cout << yytext; return T_COMMA; }
-"/"					{ cout << yytext; return T_DIV; }
-"."					{ cout << yytext; return T_DOT; }
-"=="					{ cout << yytext; return T_EQ; }
-">="					{ cout << yytext; return T_GEQ; }
-">"					{ cout << yytext; return T_GT; }
-"{"					{ cout << yytext; return T_LCB; }
-"<<"					{ cout << yytext; return T_LEFTSHIFT; }
-"<="					{ cout << yytext; return T_LEQ; }
-"("					{ cout << yytext; return T_LPAREN; }
-"["					{ cout << yytext; return T_LSB; }
-"<"					{ cout << yytext; return T_LT; }
-"-"					{ cout << yytext; return T_MINUS; }
-"%"					{ cout << yytext; return T_MOD; }
-"*"					{ cout << yytext; return T_MULT; }
-"!="					{ cout << yytext; return T_NEQ; }
-"!"					{ cout << yytext; return T_NOT; }
-"||"					{ cout << yytext; return T_OR; }
-"+"					{ cout << yytext; return T_PLUS; }
-"}"					{ cout << yytext; return T_RCB; }
-">>"					{ cout << yytext; return T_RIGHTSHIFT; }
-")"					{ cout << yytext; return T_RPAREN; }
-"]"					{ cout << yytext; return T_RSB; }
-";"					{ cout << yytext; return T_SEMICOLON; }
+"&&"					{ /*cout << yytext;*/ return T_AND; }
+"="					{ /*cout << yytext;*/ return T_ASSIGN; }
+","					{ /*cout << yytext;*/ return T_COMMA; }
+"/"					{ /*cout << yytext;*/ return T_DIV; }
+"."					{ /*cout << yytext;*/ return T_DOT; }
+"=="					{ /*cout << yytext;*/ return T_EQ; }
+">="					{ /*cout << yytext;*/ return T_GEQ; }
+">"					{ /*cout << yytext;*/ return T_GT; }
+"{"					{ /*cout << yytext;*/ return T_LCB; }
+"<<"					{ /*cout << yytext;*/ return T_LEFTSHIFT; }
+"<="					{ /*cout << yytext;*/ return T_LEQ; }
+"("					{ /*cout << yytext;*/ return T_LPAREN; }
+"["					{ /*cout << yytext;*/ return T_LSB; }
+"<"					{ /*cout << yytext;*/ return T_LT; }
+"-"					{ /*cout << yytext;*/ return T_MINUS; }
+"%"					{ /*cout << yytext;*/ return T_MOD; }
+"*"					{ /*cout << yytext;*/ return T_MULT; }
+"!="					{ /*cout << yytext;*/ return T_NEQ; }
+"!"					{ /*cout << yytext;*/ return T_NOT; }
+"||"					{ /*cout << yytext;*/ return T_OR; }
+"+"					{ /*cout << yytext;*/ return T_PLUS; }
+"}"					{ /*cout << yytext;*/ return T_RCB; }
+">>"					{ /*cout << yytext;*/ return T_RIGHTSHIFT; }
+")"					{ /*cout << yytext;*/ return T_RPAREN; }
+"]"					{ /*cout << yytext;*/ return T_RSB; }
+";"					{ /*cout << yytext;*/ return T_SEMICOLON; }
 
-[a-zA-Z\_][a-zA-Z\_0-9]*   		{ cout << yytext; yylval.sval = new string(yytext); return T_ID; } /* note that identifier pattern must be after all keywords */
+[a-zA-Z\_][a-zA-Z\_0-9]*   		{ /*cout << yytext;*/ yylval.sval = new string(yytext); return T_ID; } /* note that identifier pattern must be after all keywords */
 
-[\n]        { lineno++; cout << yytext; }
+[\n]        { lineno++; /*cout << yytext;*/ }
 
 \'(\\['"\\nrtvfab]|[^'\\\n])(\\['"\\nrtvfab]|[^'\\\n])+\'	{ cerr << "Error: char constant length is greater than one" << endl; exit(1); }
 
